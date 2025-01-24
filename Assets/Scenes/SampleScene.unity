@@ -1154,21 +1154,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26e0da6e041fd0b42b1918abc45873d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapRadius: 6
+  mapRadius: 15
   hexSize: 1.15
   useRandomSeed: 0
-  customSeed: 197221
-  elevScale: 20
-  tempScale: 20
-  moistScale: 20
-  seaLevel: 0.184
-  mountainLevel: 0.872
+  customSeed: 2093368255
+  elevScale: 12
+  tempScale: 15
+  moistScale: 10
+  seaLevel: 0.115
+  mountainLevel: 0.75
   waterPrefab: {fileID: 8461513871667306542, guid: 0cde837b618b86e4da9c3d97048abe31, type: 3}
   mountainPrefab: {fileID: 8461513871667306542, guid: b7bdb3a5d479bc34884e39decc11d9cf, type: 3}
   snowPrefab: {fileID: 8461513871667306542, guid: eed3f7c209616ba4ebc50e861730821b, type: 3}
   desertPrefab: {fileID: 3901399378525855574, guid: c50bedf67c7cf074dbf10686bad42487, type: 3}
   forestPrefab: {fileID: 3901399378525855574, guid: 9260a61773536f144b652040d1e47b93, type: 3}
   grassPrefab: {fileID: 3901399378525855574, guid: cd62f12807c509745ad7950bb9597fb2, type: 3}
+  biomeSettings: {fileID: 11400000, guid: a4ada77652582a747b906bbf4f4beaf7, type: 2}
 --- !u!4 &1787963008
 Transform:
   m_ObjectHideFlags: 0

@@ -1,0 +1,19 @@
+[Header("Global Settings")]
+enableSeaBorder = true
+enableIceCaps = true
+enableMountainRanges = true
+
+[Header("Special Rules")]
+coastalBiomeWidth = 0.15f      // Thinner coastal border
+mountainRangeDensity = 0.4f    // Not too many mountains
+allowIslands = true
+enforceMinimumBiomeSize = true
+
+[Header("Biome Distribution")]
+Biome Distributions list should contain:
+1. Desert:    15%
+2. Grassland: 30%
+3. Forest:    25%
+4. Mountain:  15%
+5. Snow:      5%
+6. Water:     10% 
