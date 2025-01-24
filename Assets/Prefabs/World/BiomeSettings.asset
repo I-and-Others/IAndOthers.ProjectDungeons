@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea389b19bbc573345bf0aebfa842b1d4, type: 3}
   m_Name: BiomeSettings
   m_EditorClassIdentifier: 
-  enableSeaBorder: 1
-  enableIceCaps: 1
+  enableSeaBorder: 0
+  enableIceCaps: 0
   enableMountainRanges: 1
   biomeDistributions:
   - biomeType: 0
