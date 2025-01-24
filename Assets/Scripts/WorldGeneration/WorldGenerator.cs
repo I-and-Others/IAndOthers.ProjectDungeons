@@ -268,7 +268,8 @@ public class WorldGenerator : MonoBehaviour
     private void GenerateSeaBorder()
     {
         float borderWidth = biomeSettings.coastalBiomeWidth;
-        foreach (var cell in mapCells)
+        // Create a copy of the list to safely iterate over
+        foreach (var cell in mapCells.ToList())
         {
             float distanceFromEdge = GetDistanceFromMapEdge(cell.q, cell.r);
             if (distanceFromEdge < borderWidth)
@@ -281,7 +282,8 @@ public class WorldGenerator : MonoBehaviour
 
     private void GenerateIceCaps()
     {
-        foreach (var cell in mapCells)
+        // Create a copy of the list to safely iterate over
+        foreach (var cell in mapCells.ToList())
         {
             float normalizedLatitude = GetNormalizedLatitude(cell.q, cell.r);
             if (normalizedLatitude > 0.8f || normalizedLatitude < -0.8f)
