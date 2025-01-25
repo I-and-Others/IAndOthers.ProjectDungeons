@@ -78,6 +78,13 @@ public class SelectionManager : MonoBehaviour
 
     private void SelectCharacter(Character character)
     {
+        // Only allow selection of the active character
+        if (!GameManager.Instance.IsCharacterTurn(character))
+        {
+            Debug.Log($"Cannot select {character.data.characterName} - not their turn!");
+            return;
+        }
+
         Debug.Log($"Selecting character: {character.data.characterName}");
         
         // Deselect previous character
@@ -107,6 +114,12 @@ public class SelectionManager : MonoBehaviour
     private void HighlightReachableCells()
     {
         ClearHexHighlights();
+
+        if (selectedCharacter.MovementPoints <= 0)
+        {
+            Debug.Log("No movement points remaining");
+            return;
+        }
 
         CharacterMovement movement = selectedCharacter.GetComponent<CharacterMovement>();
         var reachableCells = movement.FindReachableCells();
@@ -152,5 +165,14 @@ public class SelectionManager : MonoBehaviour
     public Character GetSelectedCharacter()
     {
         return selectedCharacter;
+    }
+
+    // Add this method to update highlights after movement
+    public void UpdateHighlights()
+    {
+        if (selectedCharacter != null)
+        {
+            HighlightReachableCells();
+        }
     }
 } 

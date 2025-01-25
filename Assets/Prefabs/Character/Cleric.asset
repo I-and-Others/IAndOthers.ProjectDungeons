@@ -15,7 +15,7 @@ MonoBehaviour:
   characterName: Cleric
   characterType: 2
   characterIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  characterPrefab: {fileID: 213405966477748545, guid: bb528b98c224a9e4995bd2a9e8d16092, type: 3}
+  characterPrefab: {fileID: 1587554537262557690, guid: 66f1d71ed4a80184893883d6d5b7e11c, type: 3}
   maxHealth: 80
   maxPhysicalArmor: 30
   maxMagicArmor: 60

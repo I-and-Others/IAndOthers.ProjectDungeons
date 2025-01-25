@@ -27,6 +27,8 @@ public class Character : MonoBehaviour
     public int CurrentPhysicalArmor { get => currentPhysicalArmor; }
     public int CurrentMagicArmor { get => currentMagicArmor; }
 
+    private const int MOVEMENT_POINTS_PER_TURN = 2; // Now characters can only move 2 hexes per turn
+
     private void Start()
     {
         InitializeCharacter();
@@ -134,8 +136,8 @@ public class Character : MonoBehaviour
 
     public void StartTurn()
     {
-        currentActionPoints = 4; // Reset AP
-        currentMovementPoints = data.movementPoints;
+        currentMovementPoints = MOVEMENT_POINTS_PER_TURN;
+        // Reset other stats as needed
         
         // Reduce cooldowns
         if (skill1CurrentCooldown > 0) skill1CurrentCooldown--;

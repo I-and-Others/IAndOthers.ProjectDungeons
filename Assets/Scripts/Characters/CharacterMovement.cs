@@ -206,6 +206,10 @@ public class CharacterMovement : MonoBehaviour
 
             character.CurrentTile = cell;
             character.MovementPoints--;
+            
+            // Update UI and highlights
+            GameManager.Instance.uiManager.UpdateCharacterInfo(character);
+            SelectionManager.Instance.UpdateHighlights();
         }
 
         isMoving = false;

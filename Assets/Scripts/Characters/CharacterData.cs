@@ -14,6 +14,8 @@ public class CharacterData : ScriptableObject
     public int maxPhysicalArmor = 50;
     public int maxMagicArmor = 50;
     public int movementPoints = 4;
+    public int initiative = 5;
+
 
     [Header("Basic Attack")]
     public string attackName = "Attack";
