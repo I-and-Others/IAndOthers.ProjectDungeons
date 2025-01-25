@@ -215,7 +215,6 @@ public class CharacterMovement : MonoBehaviour
             
             // Update direction BEFORE starting movement
             characterAnimator.UpdateMoveDirection(moveDirection);
-            // Wait one frame to ensure rotation starts
             yield return null;
             
             Debug.Log($"Moving to cell: {cell.q}, {cell.r}. Direction: {moveDirection}");
@@ -226,7 +225,6 @@ public class CharacterMovement : MonoBehaviour
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
                 characterAnimator.UpdateMovementSpeed(1f);
-                // Update direction each frame during movement
                 characterAnimator.UpdateMoveDirection(moveDirection);
                 yield return null;
             }
@@ -235,6 +233,7 @@ public class CharacterMovement : MonoBehaviour
             character.CurrentTile = cell;
             character.MovementPoints--;
             
+            // Force UI updates through UIManager
             GameManager.Instance.uiManager.UpdateCharacterInfo(character);
             SelectionManager.Instance.UpdateHighlights();
             

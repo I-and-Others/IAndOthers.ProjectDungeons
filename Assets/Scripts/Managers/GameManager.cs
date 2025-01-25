@@ -39,6 +39,13 @@ public class GameManager : MonoBehaviour
         characters.Sort((a, b) => b.data.initiative.CompareTo(a.data.initiative));
         turnOrder = new List<Character>(characters);
         
+        // Initialize UI for the first character before starting the game
+        if (characters.Count > 0)
+        {
+            activeCharacter = characters[0];
+            uiManager.UpdateCharacterInfo(activeCharacter);
+        }
+        
         StartGame();
     }
 
@@ -52,19 +59,19 @@ public class GameManager : MonoBehaviour
 
     public void StartTurn()
     {
-        activeCharacter = turnOrder[currentTurnIndex];
-        activeCharacter.StartTurn();
-        
-        // Update UI
-        uiManager.UpdateCharacterInfo(activeCharacter);
-        uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
-        
-        onTurnStart.Invoke();
+        if (currentTurnIndex < turnOrder.Count)
+        {
+            activeCharacter = turnOrder[currentTurnIndex];
+            activeCharacter.StartTurn();
+            
+            onTurnStart.Invoke();
+            uiManager.UpdateCharacterInfo(activeCharacter);
+            uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
+        }
     }
 
     public void EndTurn()
     {
-        // No need to check movement points anymore - players can end turn whenever they want
         onTurnEnd.Invoke();
         
         currentTurnIndex++;

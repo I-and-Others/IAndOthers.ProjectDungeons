@@ -4,7 +4,7 @@ public class Character : MonoBehaviour
 {
     public CharacterData data;
     
-    // Current stats
+    // Current stats with properties to handle UI updates
     private int currentHealth;
     private int currentPhysicalArmor;
     private int currentMagicArmor;
@@ -17,60 +17,61 @@ public class Character : MonoBehaviour
     private int skill2CurrentCooldown;
 
     public HexCell CurrentTile { get; set; }
-    public int MovementPoints 
-    { 
+    public int MovementPoints
+    {
         get => currentMovementPoints;
-        set => currentMovementPoints = Mathf.Clamp(value, 0, maxMovementPoints);
+        set
+        {
+            currentMovementPoints = Mathf.Clamp(value, 0, maxMovementPoints);
+        }
     }
 
     public int MaxMovementPoints => maxMovementPoints;  // Add getter for max movement points
 
-    // Add these public properties to access current stats
-    public int CurrentHealth { get => currentHealth; }
-    public int CurrentPhysicalArmor { get => currentPhysicalArmor; }
-    public int CurrentMagicArmor { get => currentMagicArmor; }
+    // Public properties with UI update triggers
+    public int CurrentHealth
+    {
+        get => currentHealth;
+        set => currentHealth = Mathf.Clamp(value, 0, data.maxHealth);
+    }
+
+    public int CurrentPhysicalArmor
+    {
+        get => currentPhysicalArmor;
+        set => currentPhysicalArmor = Mathf.Clamp(value, 0, data.maxPhysicalArmor);
+    }
+
+    public int CurrentMagicArmor
+    {
+        get => currentMagicArmor;
+        set => currentMagicArmor = Mathf.Clamp(value, 0, data.maxMagicArmor);
+    }
 
     private const int MOVEMENT_POINTS_PER_TURN = 2; // Now characters can only move 2 hexes per turn
-
-    [SerializeField] private CharacterStatusUI statusUIPrefab;
-    private CharacterStatusUI statusUI;
 
     private void Start()
     {
         InitializeCharacter();
-        InitializeUI();
     }
 
     private void InitializeCharacter()
     {
+        // Initialize all stats first
         currentHealth = data.maxHealth;
         currentPhysicalArmor = data.maxPhysicalArmor;
         currentMagicArmor = data.maxMagicArmor;
-        maxMovementPoints = data.movementPoints;  // Store max movement points from data
+        maxMovementPoints = data.movementPoints;
         currentMovementPoints = maxMovementPoints;
-        currentActionPoints = 4; // Standard AP per turn
+        currentActionPoints = 4;
         
         skill1CurrentCooldown = 0;
         skill2CurrentCooldown = 0;
-    }
 
-    private void InitializeUI()
-    {
-        // Instantiate the UI prefab under the UI canvas
-        Canvas worldCanvas = FindObjectOfType<Canvas>();
-        if (worldCanvas != null && statusUIPrefab != null)
-        {
-            statusUI = Instantiate(statusUIPrefab, worldCanvas.transform);
-            statusUI.Initialize(this);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (statusUI != null)
-        {
-            Destroy(statusUI.gameObject);
-        }
+        // Then update the properties to ensure proper clamping
+        CurrentHealth = currentHealth;
+        CurrentPhysicalArmor = currentPhysicalArmor;
+        CurrentMagicArmor = currentMagicArmor;
+        MovementPoints = currentMovementPoints;
     }
 
     public void UseSkill(int skillNumber, Character target)
@@ -106,49 +107,49 @@ public class Character : MonoBehaviour
         switch (type)
         {
             case SkillType.PhysicalAttack:
-                if (target.currentPhysicalArmor > 0)
+                if (target.CurrentPhysicalArmor > 0)
                 {
-                    target.currentPhysicalArmor -= amount;
-                    if (target.currentPhysicalArmor < 0)
+                    target.CurrentPhysicalArmor -= amount;
+                    if (target.CurrentPhysicalArmor < 0)
                     {
-                        target.currentHealth += target.currentPhysicalArmor;
-                        target.currentPhysicalArmor = 0;
+                        target.CurrentHealth += target.CurrentPhysicalArmor;
+                        target.CurrentPhysicalArmor = 0;
                     }
                 }
                 else
                 {
-                    target.currentHealth -= amount;
+                    target.CurrentHealth -= amount;
                 }
                 break;
 
             case SkillType.MagicalAttack:
-                if (target.currentMagicArmor > 0)
+                if (target.CurrentMagicArmor > 0)
                 {
-                    target.currentMagicArmor -= amount;
-                    if (target.currentMagicArmor < 0)
+                    target.CurrentMagicArmor -= amount;
+                    if (target.CurrentMagicArmor < 0)
                     {
-                        target.currentHealth += target.currentMagicArmor;
-                        target.currentMagicArmor = 0;
+                        target.CurrentHealth += target.CurrentMagicArmor;
+                        target.CurrentMagicArmor = 0;
                     }
                 }
                 else
                 {
-                    target.currentHealth -= amount;
+                    target.CurrentHealth -= amount;
                 }
                 break;
 
             case SkillType.Heal:
-                target.currentHealth = Mathf.Min(target.currentHealth + amount, target.data.maxHealth);
+                target.CurrentHealth = Mathf.Min(target.CurrentHealth + amount, target.data.maxHealth);
                 break;
 
             case SkillType.Debuff:
                 // For debuff, we'll reduce physical armor
-                target.currentPhysicalArmor = Mathf.Max(0, target.currentPhysicalArmor - amount);
+                target.CurrentPhysicalArmor = Mathf.Max(0, target.CurrentPhysicalArmor - amount);
                 break;
         }
 
         // Check for death
-        if (target.currentHealth <= 0)
+        if (target.CurrentHealth <= 0)
         {
             target.Die();
         }
@@ -163,8 +164,7 @@ public class Character : MonoBehaviour
 
     public void StartTurn()
     {
-        // Reset movement points to max at start of turn
-        currentMovementPoints = maxMovementPoints;
+        MovementPoints = maxMovementPoints;
         
         // Reduce cooldowns
         if (skill1CurrentCooldown > 0) skill1CurrentCooldown--;

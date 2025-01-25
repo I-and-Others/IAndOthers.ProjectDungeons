@@ -8,7 +8,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button endTurnButton;
     [SerializeField] private TextMeshProUGUI characterInfoText;
     [SerializeField] private TextMeshProUGUI turnOrderText;
-    [SerializeField] private TextMeshProUGUI activeCharacterDetailsText;
+    [SerializeField] private CharacterStatusUI characterStatusUI;
 
     private void Start()
     {
@@ -39,9 +39,11 @@ public class UIManager : MonoBehaviour
                                $"HP: {character.CurrentHealth}/{character.data.maxHealth}\n" +
                                $"Physical Armor: {character.CurrentPhysicalArmor}\n" +
                                $"Magic Armor: {character.CurrentMagicArmor}\n" +
-                               $"Movement Points: {character.MovementPoints}/{character.MaxMovementPoints}\n" +
+                               $"Movement Points: {character.MovementPoints}\n" +
                                $"Initiative: {character.data.initiative}";
                                
+        // Update the character status UI
+        characterStatusUI.UpdateForCharacter(character);
         UpdateEndTurnButton();
     }
 

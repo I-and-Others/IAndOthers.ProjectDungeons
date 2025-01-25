@@ -10,42 +10,43 @@ public class CharacterStatusUI : MonoBehaviour
     [SerializeField] private Image physicalArmorBarFill;
     [SerializeField] private Image magicalArmorBarFill;
     [SerializeField] private TextMeshProUGUI movementPointsText;
-    [SerializeField] private GameObject movementPointsContainer;
-
-    [Header("Colors")]
-    [SerializeField] private Color healthColor = Color.green;
-    [SerializeField] private Color physicalArmorColor = new Color(0.7f, 0.7f, 0.7f);
-    [SerializeField] private Color magicalArmorColor = new Color(0.4f, 0.6f, 1f);
-
-    [Header("Visibility")]
-    [SerializeField] private float visibilityDistance = 20f;
-    [SerializeField] private CanvasGroup canvasGroup;
-
-    private Character character;
-    private Camera mainCamera;
+    
+    [SerializeField] private Character targetCharacter; // Assign this in inspector
+    
     private RectTransform rectTransform;
-    private Vector3 offset = new Vector3(0, 2f, 0); // Adjust this to position the UI above the character
+    private Vector3 offset = new Vector3(0, 2f, 0);
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
-        mainCamera = Camera.main;
+    }
+
+    private void Start()
+    {
+        if (targetCharacter != null)
+        {
+            Initialize(targetCharacter);
+        }
     }
 
     public void Initialize(Character character)
     {
-        this.character = character;
-        characterIcon.sprite = character.data.characterIcon;
+        targetCharacter = character;
+        
+        if (character.data.characterIcon != null)
+        {
+            characterIcon.sprite = character.data.characterIcon;
+        }
         UpdateUI();
     }
 
     private void LateUpdate()
     {
-        if (character != null)
+        if (targetCharacter != null)
         {
             // Update position to follow character
-            Vector3 worldPosition = character.transform.position + offset;
-            Vector3 screenPosition = mainCamera.WorldToScreenPoint(worldPosition);
+            Vector3 worldPosition = targetCharacter.transform.position + offset;
+            Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
             
             if (screenPosition.z < 0)
             {
@@ -53,36 +54,40 @@ public class CharacterStatusUI : MonoBehaviour
             }
 
             rectTransform.position = screenPosition;
-            
-            // Update stats
             UpdateUI();
         }
     }
 
-    private void UpdateUI()
+    public void UpdateUI()
     {
-        // Update health bar
-        float healthPercent = (float)character.CurrentHealth / character.data.maxHealth;
-        healthBarFill.fillAmount = healthPercent;
+        if (targetCharacter == null) return;
 
-        // Update armor bars
-        float physicalArmorPercent = (float)character.CurrentPhysicalArmor / character.data.maxPhysicalArmor;
-        physicalArmorBarFill.fillAmount = physicalArmorPercent;
+        // Update bars
+        healthBarFill.fillAmount = (float)targetCharacter.CurrentHealth / targetCharacter.data.maxHealth;
+        physicalArmorBarFill.fillAmount = (float)targetCharacter.CurrentPhysicalArmor / targetCharacter.data.maxPhysicalArmor;
+        magicalArmorBarFill.fillAmount = (float)targetCharacter.CurrentMagicArmor / targetCharacter.data.maxMagicArmor;
 
-        float magicalArmorPercent = (float)character.CurrentMagicArmor / character.data.maxMagicArmor;
-        magicalArmorBarFill.fillAmount = magicalArmorPercent;
+        // Update movement points text
+        movementPointsText.text = $"{targetCharacter.MovementPoints}";
 
-        // Update movement points
-        movementPointsText.text = character.MovementPoints.ToString();
-        movementPointsContainer.SetActive(GameManager.Instance.IsCharacterTurn(character));
+        // Optional: Add visual feedback for active character
+        bool isActive = GameManager.Instance.GetActiveCharacter() == targetCharacter;
+        // You could add some visual indication that this is the active character
     }
 
-    private void UpdateVisibility()
+    public void UpdateForCharacter(Character character)
     {
-        if (canvasGroup != null)
-        {
-            float distanceToCamera = Vector3.Distance(mainCamera.transform.position, character.transform.position);
-            canvasGroup.alpha = Mathf.Lerp(1f, 0f, (distanceToCamera - visibilityDistance) / 5f);
-        }
+        if (character == null) return;
+
+        // Update character icon
+        characterIcon.sprite = character.data.characterIcon;
+
+        // Update bars
+        healthBarFill.fillAmount = (float)character.CurrentHealth / character.data.maxHealth;
+        physicalArmorBarFill.fillAmount = (float)character.CurrentPhysicalArmor / character.data.maxPhysicalArmor;
+        magicalArmorBarFill.fillAmount = (float)character.CurrentMagicArmor / character.data.maxMagicArmor;
+
+        // Update movement points text
+        movementPointsText.text = $"{character.MovementPoints}";
     }
 } 
