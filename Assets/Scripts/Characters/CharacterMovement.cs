@@ -10,13 +10,25 @@ public class CharacterMovement : MonoBehaviour
     private bool isMoving = false;
 
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 10f;
+    [SerializeField] private float accelerationTime = 0.1f;
+    [SerializeField] private float decelerationTime = 0.1f;
     
+    private float currentSpeed;
+    private Vector3 moveDirection;
     private Dictionary<HexCell, int> pathCosts = new Dictionary<HexCell, int>();
     private Dictionary<HexCell, HexCell> cameFrom = new Dictionary<HexCell, HexCell>();
+
+    private CharacterAnimator characterAnimator;
 
     private void Start()
     {
         character = GetComponent<Character>();
+        characterAnimator = GetComponent<CharacterAnimator>();
+        if (characterAnimator == null)
+        {
+            Debug.LogError("CharacterAnimator component not found!");
+        }
         GameManager.Instance.onTurnStart.AddListener(OnTurnStart);
     }
 
@@ -191,27 +203,45 @@ public class CharacterMovement : MonoBehaviour
 
     private System.Collections.IEnumerator FollowPath(List<HexCell> path)
     {
+        Debug.Log("FollowPath started");
         isMoving = true;
         currentPath = path;
 
         foreach (var cell in path)
         {
+            Vector3 startPos = transform.position;
             Vector3 targetPos = cell.transform.position + Vector3.up * 0.1f;
+            moveDirection = (targetPos - startPos).normalized;
+            
+            // Update direction BEFORE starting movement
+            characterAnimator.UpdateMoveDirection(moveDirection);
+            // Wait one frame to ensure rotation starts
+            yield return null;
+            
+            Debug.Log($"Moving to cell: {cell.q}, {cell.r}. Direction: {moveDirection}");
+            
+            float distance = Vector3.Distance(startPos, targetPos);
             
             while (Vector3.Distance(transform.position, targetPos) > 0.01f)
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
+                characterAnimator.UpdateMovementSpeed(1f);
+                // Update direction each frame during movement
+                characterAnimator.UpdateMoveDirection(moveDirection);
                 yield return null;
             }
 
+            transform.position = targetPos;
             character.CurrentTile = cell;
             character.MovementPoints--;
             
-            // Update UI and highlights
             GameManager.Instance.uiManager.UpdateCharacterInfo(character);
             SelectionManager.Instance.UpdateHighlights();
+            
+            yield return new WaitForSeconds(0.1f);
         }
 
+        characterAnimator.UpdateMovementSpeed(0);
         isMoving = false;
         currentPath.Clear();
     }

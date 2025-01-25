@@ -52,7 +52,7 @@ public class WorldSettingManager : MonoBehaviour
 
             // Spawn character
             GameObject characterObj = Instantiate(characterData.characterPrefab, 
-                spawnTile.transform.position + Vector3.up * 0.1f, // Slight offset to prevent z-fighting
+                spawnTile.transform.position + Vector3.up * 0.0f, // Slight offset to prevent z-fighting
                 Quaternion.identity);
             
             Character character = characterObj.GetComponent<Character>();

@@ -10,6 +10,7 @@ public class Character : MonoBehaviour
     private int currentMagicArmor;
     private int currentActionPoints;
     private int currentMovementPoints;
+    private int maxMovementPoints;  // Store the max movement points
     
     // Skill cooldowns
     private int skill1CurrentCooldown;
@@ -19,8 +20,10 @@ public class Character : MonoBehaviour
     public int MovementPoints 
     { 
         get => currentMovementPoints;
-        set => currentMovementPoints = value;
+        set => currentMovementPoints = Mathf.Clamp(value, 0, maxMovementPoints);
     }
+
+    public int MaxMovementPoints => maxMovementPoints;  // Add getter for max movement points
 
     // Add these public properties to access current stats
     public int CurrentHealth { get => currentHealth; }
@@ -29,9 +32,13 @@ public class Character : MonoBehaviour
 
     private const int MOVEMENT_POINTS_PER_TURN = 2; // Now characters can only move 2 hexes per turn
 
+    [SerializeField] private CharacterStatusUI statusUIPrefab;
+    private CharacterStatusUI statusUI;
+
     private void Start()
     {
         InitializeCharacter();
+        InitializeUI();
     }
 
     private void InitializeCharacter()
@@ -39,11 +46,31 @@ public class Character : MonoBehaviour
         currentHealth = data.maxHealth;
         currentPhysicalArmor = data.maxPhysicalArmor;
         currentMagicArmor = data.maxMagicArmor;
-        currentMovementPoints = data.movementPoints;
+        maxMovementPoints = data.movementPoints;  // Store max movement points from data
+        currentMovementPoints = maxMovementPoints;
         currentActionPoints = 4; // Standard AP per turn
         
         skill1CurrentCooldown = 0;
         skill2CurrentCooldown = 0;
+    }
+
+    private void InitializeUI()
+    {
+        // Instantiate the UI prefab under the UI canvas
+        Canvas worldCanvas = FindObjectOfType<Canvas>();
+        if (worldCanvas != null && statusUIPrefab != null)
+        {
+            statusUI = Instantiate(statusUIPrefab, worldCanvas.transform);
+            statusUI.Initialize(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (statusUI != null)
+        {
+            Destroy(statusUI.gameObject);
+        }
     }
 
     public void UseSkill(int skillNumber, Character target)
@@ -136,8 +163,8 @@ public class Character : MonoBehaviour
 
     public void StartTurn()
     {
-        currentMovementPoints = MOVEMENT_POINTS_PER_TURN;
-        // Reset other stats as needed
+        // Reset movement points to max at start of turn
+        currentMovementPoints = maxMovementPoints;
         
         // Reduce cooldowns
         if (skill1CurrentCooldown > 0) skill1CurrentCooldown--;

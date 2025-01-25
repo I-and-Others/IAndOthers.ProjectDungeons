@@ -15,11 +15,12 @@ MonoBehaviour:
   characterName: Archer
   characterType: 1
   characterIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  characterPrefab: {fileID: 1591660402443439432, guid: 85c889674f6658a4fadbec8620514676, type: 3}
+  characterPrefab: {fileID: 1005824932370710125, guid: 85c889674f6658a4fadbec8620514676, type: 3}
   maxHealth: 90
   maxPhysicalArmor: 40
   maxMagicArmor: 40
   movementPoints: 4
+  initiative: 4
   attackName: Arrow Shot
   attackDamage: 10
   attackType: 0

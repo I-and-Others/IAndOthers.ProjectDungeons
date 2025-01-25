@@ -39,7 +39,7 @@ public class UIManager : MonoBehaviour
                                $"HP: {character.CurrentHealth}/{character.data.maxHealth}\n" +
                                $"Physical Armor: {character.CurrentPhysicalArmor}\n" +
                                $"Magic Armor: {character.CurrentMagicArmor}\n" +
-                               $"Movement Points: {character.MovementPoints}/2\n" +
+                               $"Movement Points: {character.MovementPoints}/{character.MaxMovementPoints}\n" +
                                $"Initiative: {character.data.initiative}";
                                
         UpdateEndTurnButton();
