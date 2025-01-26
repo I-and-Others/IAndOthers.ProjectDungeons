@@ -54,11 +54,6 @@ public class Character : MonoBehaviour
         InitializeCharacter();
     }
 
-    private void Start()
-    {
-        InitializeCharacter();
-    }
-
     private void InitializeCharacter()
     {
         // Initialize all stats first
