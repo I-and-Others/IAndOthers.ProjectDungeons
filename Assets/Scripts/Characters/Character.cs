@@ -49,6 +49,11 @@ public class Character : MonoBehaviour
 
     private const int MOVEMENT_POINTS_PER_TURN = 2; // Now characters can only move 2 hexes per turn
 
+    void Awake()
+    {
+        InitializeCharacter();
+    }
+
     private void Start()
     {
         InitializeCharacter();

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Cleric
   characterType: 2
-  characterIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  characterIcon: {fileID: 21300000, guid: 4dc051a0301cecb4aa1a85036ace2a58, type: 3}
   characterPrefab: {fileID: 2157009533924800307, guid: 66f1d71ed4a80184893883d6d5b7e11c, type: 3}
   maxHealth: 80
   maxPhysicalArmor: 30

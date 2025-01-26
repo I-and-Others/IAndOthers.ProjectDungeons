@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Archer
   characterType: 1
-  characterIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  characterIcon: {fileID: 21300000, guid: c51afa706b02a044694b30f33f81d239, type: 3}
   characterPrefab: {fileID: 1005824932370710125, guid: 85c889674f6658a4fadbec8620514676, type: 3}
   maxHealth: 90
   maxPhysicalArmor: 40
