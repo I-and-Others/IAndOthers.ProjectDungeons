@@ -1,15 +1,26 @@
 using UnityEngine;
 using Unity.Cinemachine;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
 
+    [Header("Camera Settings")]
     [SerializeField] private CinemachineCamera virtualCamera;
     [SerializeField] private float cameraDistance = 10f;
     [SerializeField] private float cameraAngle = 45f;
     [SerializeField] private float smoothTime = 0.5f;
+    
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 20f;
+    [SerializeField] private float followSpeed = 5f;
+
+    private Vector2 moveInput;
+    private Transform cameraTarget;
+    private Vector3 targetPosition;
+    private bool isFollowingCharacter = true;
 
     private void Awake()
     {
@@ -22,7 +33,6 @@ public class CameraController : MonoBehaviour
             Destroy(gameObject);
         }
 
-        // Configure virtual camera if needed
         if (virtualCamera != null)
         {
             ConfigureVirtualCamera();
@@ -31,7 +41,6 @@ public class CameraController : MonoBehaviour
 
     private void ConfigureVirtualCamera()
     {
-        // Set initial camera position and rotation
         var transposer = virtualCamera.GetComponent<CinemachineTransposer>();
         if (transposer != null)
         {
@@ -41,27 +50,62 @@ public class CameraController : MonoBehaviour
             transposer.m_ZDamping = smoothTime;
         }
 
-        // Set camera rotation
         virtualCamera.transform.rotation = Quaternion.Euler(cameraAngle, 0, 0);
+        
+        if (cameraTarget == null)
+        {
+            var targetObj = new GameObject("CameraTarget");
+            cameraTarget = targetObj.transform;
+            targetPosition = Vector3.zero;
+            virtualCamera.Follow = cameraTarget;
+        }
     }
 
-    private void Start()
+    private void Update()
     {
-        // Subscribe to character spawn event
-        if (WorldSettingManager.Instance != null)
+        UpdateCameraPosition();
+    }
+
+    private void UpdateCameraPosition()
+    {
+        if (isFollowingCharacter && GameManager.Instance.GetActiveCharacter() != null)
         {
-            WorldSettingManager.Instance.onCharactersSpawned.AddListener(OnCharactersSpawned);
+            targetPosition = GameManager.Instance.GetActiveCharacter().transform.position;
+            cameraTarget.position = Vector3.Lerp(cameraTarget.position, targetPosition, Time.deltaTime * followSpeed);
         }
-        
-        // Subscribe to turn changes
-        GameManager.Instance.onTurnStart.AddListener(OnTurnStart);
+        else
+        {
+            Vector3 moveDir = new Vector3(moveInput.x, 0, moveInput.y);
+            targetPosition += moveDir * (moveSpeed * Time.deltaTime);
+            cameraTarget.position = Vector3.Lerp(cameraTarget.position, targetPosition, Time.deltaTime * 10f);
+        }
+    }
+
+    public void OnMove(InputValue value)
+    {
+        moveInput = value.Get<Vector2>();
+        if (moveInput != Vector2.zero)
+        {
+            isFollowingCharacter = false;
+            targetPosition = cameraTarget.position;
+        }
+    }
+
+    // Called when character moves
+    public void OnCharacterMoved(Character character)
+    {
+        if (character == GameManager.Instance.GetActiveCharacter() && moveInput == Vector2.zero)
+        {
+            isFollowingCharacter = true;
+            targetPosition = character.transform.position;
+        }
     }
 
     private void OnCharactersSpawned(List<Character> characters)
     {
         if (characters.Count > 0)
         {
-            SetCameraTarget(characters[0].transform);
+            FocusOnCharacter(characters[0].transform);
         }
     }
 
@@ -70,17 +114,25 @@ public class CameraController : MonoBehaviour
         Character activeCharacter = GameManager.Instance.GetActiveCharacter();
         if (activeCharacter != null)
         {
-            SetCameraTarget(activeCharacter.transform);
+            FocusOnCharacter(activeCharacter.transform);
         }
     }
 
-    public void SetCameraTarget(Transform target)
+    public void FocusOnCharacter(Transform character)
     {
-        if (virtualCamera != null)
+        isFollowingCharacter = true;
+        targetPosition = character.position;
+        cameraTarget.position = targetPosition;
+    }
+
+    private void Start()
+    {
+        if (WorldSettingManager.Instance != null)
         {
-            virtualCamera.Follow = target;
-            virtualCamera.LookAt = target;
+            WorldSettingManager.Instance.onCharactersSpawned.AddListener(OnCharactersSpawned);
         }
+        
+        GameManager.Instance.onTurnStart.AddListener(OnTurnStart);
     }
 
     private void OnDestroy()

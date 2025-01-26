@@ -233,7 +233,9 @@ public class CharacterMovement : MonoBehaviour
             character.CurrentTile = cell;
             character.MovementPoints--;
             
-            // Force UI updates through UIManager
+            // Notify camera of movement
+            CameraController.Instance.OnCharacterMoved(character);
+            
             GameManager.Instance.uiManager.UpdateCharacterInfo(character);
             SelectionManager.Instance.UpdateHighlights();
             
