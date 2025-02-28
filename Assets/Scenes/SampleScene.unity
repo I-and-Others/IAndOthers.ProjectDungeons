@@ -3207,6 +3207,7 @@ GameObject:
   - component: {fileID: 1009986529}
   - component: {fileID: 1009986528}
   - component: {fileID: 1009986527}
+  - component: {fileID: 1009986531}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -3302,6 +3303,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!225 &1009986531
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009986526}
+  m_Enabled: 0
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &1030222433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4485,7 +4498,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   skillBarUI: {fileID: 30480174}
-  hexHighlightPrefab: {fileID: 140302887239561883, guid: 28c589b5a20bf544bb3fe5d6eaf7514b, type: 3}
 --- !u!4 &1572686001
 Transform:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class SkillBarUI : MonoBehaviour
 {
@@ -30,6 +31,13 @@ public class SkillBarUI : MonoBehaviour
 
         GameManager.Instance.onTurnStart.AddListener(OnTurnStart);
         GameManager.Instance.onTurnEnd.AddListener(OnTurnEnd);
+
+        // Add listener for the Cancel action
+        var playerInput = GetComponent<PlayerInput>();
+        if (playerInput != null)
+        {
+            playerInput.actions["Cancel"].performed += ctx => CancelSkillSelection();
+        }
     }
 
     private void OnTurnStart()
@@ -80,11 +88,29 @@ public class SkillBarUI : MonoBehaviour
 
     private void OnSkillButtonClicked(int skillIndex)
     {
-        selectedSkillIndex = skillIndex;
-        Debug.Log($"Selected skill {skillIndex}");
-        
-        // Update selection manager to show skill range
-        SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
+        if (selectedSkillIndex == skillIndex)
+        {
+            // Deselect the skill if it's already selected
+            CancelSkillSelection();
+        }
+        else
+        {
+            selectedSkillIndex = skillIndex;
+            Debug.Log($"Selected skill {skillIndex}");
+            
+            // Update selection manager to show skill range
+            SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
+        }
+    }
+
+    public void CancelSkillSelection()
+    {
+        if (selectedSkillIndex != -1)
+        {
+            Debug.Log("Skill selection canceled");
+            selectedSkillIndex = -1;
+            SelectionManager.Instance.SetSelectionMode(SelectionMode.Move);
+        }
     }
 
     public void TryUseSkillOnCell(HexCell targetCell)
@@ -100,9 +126,6 @@ public class SkillBarUI : MonoBehaviour
             return;
         }
 
-        // For now, just log the skill usage
-        Debug.Log($"Using skill {selectedSkillIndex} on cell {targetCell.q}, {targetCell.r}");
-        
         // Update cooldown and UI
         currentCharacter.UseSkill(selectedSkillIndex, null); // We'll add target later
         UpdateCooldowns();
@@ -117,6 +140,20 @@ public class SkillBarUI : MonoBehaviour
         return (Mathf.Abs(a.q - b.q) 
                 + Mathf.Abs(a.q + a.r - b.q - b.r)
                 + Mathf.Abs(a.r - b.r)) / 2;
+    }
+
+    public void SelectSkill(int skillIndex)
+    {
+        if (selectedSkillIndex == skillIndex)
+        {
+            CancelSkillSelection();
+        }
+        else
+        {
+            selectedSkillIndex = skillIndex;
+            Debug.Log($"Selected skill {skillIndex}");
+            SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
+        }
     }
 
     private void OnDestroy()

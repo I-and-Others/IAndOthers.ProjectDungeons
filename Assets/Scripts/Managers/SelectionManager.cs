@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public enum SelectionMode
 {
@@ -55,7 +56,11 @@ public class SelectionManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            HandleSelection();
+            // Check if the pointer is over a UI element
+            if (!EventSystem.current.IsPointerOverGameObject())
+            {
+                HandleSelection();
+            }
         }
     }
 
@@ -79,7 +84,6 @@ public class SelectionManager : MonoBehaviour
             HexCell hitCell = hit.collider.GetComponent<HexCell>();
             if (hitCell != null && selectedCharacter != null)
             {
-                Debug.Log($"Hex cell hit at: {hitCell.q}, {hitCell.r}");
                 OnHexClicked(hitCell);
             }
         }
@@ -193,7 +197,6 @@ public class SelectionManager : MonoBehaviour
 
     private void OnHexClicked(HexCell cell)
     {
-        Debug.Log($"Hex clicked at: {cell.q}, {cell.r}");
         if (currentMode == SelectionMode.Move)
         {
             TryMoveCharacter(cell);
