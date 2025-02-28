@@ -88,7 +88,6 @@ public class GameManager : MonoBehaviour
 
     private void StartNewRound()
     {
-        Debug.Log("Starting new round");
         foreach (var character in characters)
         {
             // Reset any round-based stats here if needed

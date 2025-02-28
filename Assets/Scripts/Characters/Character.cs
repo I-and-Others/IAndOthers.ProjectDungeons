@@ -74,21 +74,21 @@ public class Character : MonoBehaviour
         MovementPoints = currentMovementPoints;
     }
 
-    public void UseSkill(int skillNumber, Character target)
+    public void UseSkill(int skillIndex, Character target)
     {
-        if (skillNumber == 0) // Basic attack
+        switch (skillIndex)
         {
-            ApplyDamage(target, data.attackDamage, data.attackType);
-        }
-        else if (skillNumber == 1 && skill1CurrentCooldown <= 0)
-        {
-            ApplySkill1(target);
-            skill1CurrentCooldown = data.skill1Cooldown;
-        }
-        else if (skillNumber == 2 && skill2CurrentCooldown <= 0)
-        {
-            ApplySkill2(target);
-            skill2CurrentCooldown = data.skill2Cooldown;
+            case 0: // Basic attack
+                Debug.Log($"Using basic attack: {data.attackName}");
+                break;
+            case 1:
+                Debug.Log($"Using skill 1: {data.skill1Name}");
+                skill1CurrentCooldown = data.skill1Cooldown;
+                break;
+            case 2:
+                Debug.Log($"Using skill 2: {data.skill2Name}");
+                skill2CurrentCooldown = data.skill2Cooldown;
+                break;
         }
     }
 
@@ -177,5 +177,20 @@ public class Character : MonoBehaviour
         if (skillNumber == 1) return currentActionPoints >= data.skill1ActionPointCost && skill1CurrentCooldown <= 0;
         if (skillNumber == 2) return currentActionPoints >= data.skill2ActionPointCost && skill2CurrentCooldown <= 0;
         return false;
+    }
+
+    public int GetSkillCooldown(int skillIndex)
+    {
+        switch (skillIndex)
+        {
+            case 0: // Basic attack
+                return 0; // Basic attack has no cooldown for now
+            case 1:
+                return skill1CurrentCooldown;
+            case 2:
+                return skill2CurrentCooldown;
+            default:
+                return 0;
+        }
     }
 } 

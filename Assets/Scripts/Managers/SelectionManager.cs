@@ -1,6 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+public enum SelectionMode
+{
+    Move,
+    TargetSelect
+}
+
 public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance { get; private set; }
@@ -16,6 +22,10 @@ public class SelectionManager : MonoBehaviour
     private Character selectedCharacter;
     private List<HexCell> highlightedCells = new List<HexCell>();
     private Camera mainCamera;
+
+    private SelectionMode currentMode = SelectionMode.Move;
+    private int currentRange;
+    [SerializeField] private SkillBarUI skillBarUI;
 
     private void Awake()
     {
@@ -60,7 +70,6 @@ public class SelectionManager : MonoBehaviour
             Character hitCharacter = hit.collider.GetComponent<Character>();
             if (hitCharacter != null)
             {
-                Debug.Log($"Selected character: {hitCharacter.data.characterName}");
                 SelectCharacter(hitCharacter);
             }
         }
@@ -70,8 +79,8 @@ public class SelectionManager : MonoBehaviour
             HexCell hitCell = hit.collider.GetComponent<HexCell>();
             if (hitCell != null && selectedCharacter != null)
             {
-                Debug.Log($"Clicked hex at coordinates: {hitCell.q}, {hitCell.r}");
-                TryMoveCharacter(hitCell);
+                Debug.Log($"Hex cell hit at: {hitCell.q}, {hitCell.r}");
+                OnHexClicked(hitCell);
             }
         }
     }
@@ -81,11 +90,11 @@ public class SelectionManager : MonoBehaviour
         // Only allow selection of the active character
         if (!GameManager.Instance.IsCharacterTurn(character))
         {
-            Debug.Log($"Cannot select {character.data.characterName} - not their turn!");
+            // Debug.Log($"Cannot select {character.data.characterName} - not their turn!");
             return;
         }
 
-        Debug.Log($"Selecting character: {character.data.characterName}");
+        // Debug.Log($"Selecting character: {character.data.characterName}");
         
         // Deselect previous character
         if (selectedCharacter != null)
@@ -115,14 +124,12 @@ public class SelectionManager : MonoBehaviour
     {
         ClearHexHighlights();
 
-        if (selectedCharacter.MovementPoints <= 0)
-        {
-            Debug.Log("No movement points remaining");
-            return;
-        }
+        if (selectedCharacter == null) return;
 
         CharacterMovement movement = selectedCharacter.GetComponent<CharacterMovement>();
-        var reachableCells = movement.FindReachableCells();
+        var reachableCells = currentMode == SelectionMode.Move 
+            ? movement.FindReachableCells() 
+            : movement.FindCellsInRange(currentRange);
 
         foreach (var cell in reachableCells)
         {
@@ -131,7 +138,7 @@ public class SelectionManager : MonoBehaviour
                 outline = cell.gameObject.AddComponent<Outline>();
 
             outline.enabled = true;
-            outline.OutlineColor = validMoveColor;
+            outline.OutlineColor = currentMode == SelectionMode.Move ? validMoveColor : selectedCharacterColor;
             highlightedCells.Add(cell);
         }
     }
@@ -157,7 +164,7 @@ public class SelectionManager : MonoBehaviour
         CharacterMovement movement = selectedCharacter.GetComponent<CharacterMovement>();
         if (movement != null)
         {
-            Debug.Log($"Attempting to move to hex at: {targetCell.q}, {targetCell.r}");
+            // Debug.Log($"Attempting to move to hex at: {targetCell.q}, {targetCell.r}");
             movement.MoveTo(targetCell);
         }
     }
@@ -173,6 +180,27 @@ public class SelectionManager : MonoBehaviour
         if (selectedCharacter != null)
         {
             HighlightReachableCells();
+        }
+    }
+
+    public void SetSelectionMode(SelectionMode mode, int range = 0)
+    {
+        currentMode = mode;
+        currentRange = range;
+        // Update highlights based on new mode
+        UpdateHighlights();
+    }
+
+    private void OnHexClicked(HexCell cell)
+    {
+        Debug.Log($"Hex clicked at: {cell.q}, {cell.r}");
+        if (currentMode == SelectionMode.Move)
+        {
+            TryMoveCharacter(cell);
+        }
+        else if (currentMode == SelectionMode.TargetSelect)
+        {
+            skillBarUI.TryUseSkillOnCell(cell);
         }
     }
 } 

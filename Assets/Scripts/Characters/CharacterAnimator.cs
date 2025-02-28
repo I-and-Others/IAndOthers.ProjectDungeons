@@ -62,7 +62,6 @@ public class CharacterAnimator : MonoBehaviour
         if (direction.magnitude > movementThreshold)
         {
             targetDirection = direction;
-            Debug.Log($"Updated move direction: {direction}"); // Debug log
         }
     }
 

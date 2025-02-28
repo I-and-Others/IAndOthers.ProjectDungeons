@@ -36,7 +36,7 @@ public class CharacterMovement : MonoBehaviour
     {
         if (character == GameManager.Instance.GetActiveCharacter())
         {
-            Debug.Log($"Turn started for {character.data.characterName} with {character.MovementPoints} movement points");
+            // Debug.Log($"Turn started for {character.data.characterName} with {character.MovementPoints} movement points");
             ShowMovementRange();
         }
     }
@@ -180,30 +180,30 @@ public class CharacterMovement : MonoBehaviour
     {
         if (isMoving || character != GameManager.Instance.GetActiveCharacter())
         {
-            Debug.Log("Cannot move: Either already moving or not active character");
+            // Debug.Log("Cannot move: Either already moving or not active character");
             return;
         }
 
         var path = FindPath(character.CurrentTile, targetCell);
         if (path == null)
         {
-            Debug.Log("No valid path found to target cell");
+            // Debug.Log("No valid path found to target cell");
             return;
         }
 
         if (path.Count > character.MovementPoints)
         {
-            Debug.Log($"Path too long: {path.Count} steps but only {character.MovementPoints} movement points available");
+            // Debug.Log($"Path too long: {path.Count} steps but only {character.MovementPoints} movement points available");
             return;
         }
 
-        Debug.Log($"Starting movement along path of {path.Count} steps");
+        // Debug.Log($"Starting movement along path of {path.Count} steps");
         StartCoroutine(FollowPath(path));
     }
 
     private System.Collections.IEnumerator FollowPath(List<HexCell> path)
     {
-        Debug.Log("FollowPath started");
+        // Debug.Log("FollowPath started");
         isMoving = true;
         currentPath = path;
 
@@ -217,7 +217,7 @@ public class CharacterMovement : MonoBehaviour
             characterAnimator.UpdateMoveDirection(moveDirection);
             yield return null;
             
-            Debug.Log($"Moving to cell: {cell.q}, {cell.r}. Direction: {moveDirection}");
+            // Debug.Log($"Moving to cell: {cell.q}, {cell.r}. Direction: {moveDirection}");
             
             float distance = Vector3.Distance(startPos, targetPos);
             
@@ -245,6 +245,35 @@ public class CharacterMovement : MonoBehaviour
         characterAnimator.UpdateMovementSpeed(0);
         isMoving = false;
         currentPath.Clear();
+    }
+
+    public List<HexCell> FindCellsInRange(int range)
+    {
+        var reachable = new List<HexCell>();
+        var visited = new HashSet<HexCell>();
+        var queue = new Queue<(HexCell cell, int distance)>();
+
+        queue.Enqueue((character.CurrentTile, 0));
+        visited.Add(character.CurrentTile);
+
+        while (queue.Count > 0)
+        {
+            var (current, distance) = queue.Dequeue();
+            reachable.Add(current);
+
+            if (distance >= range) continue;
+
+            foreach (var neighbor in GetNeighbors(current))
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    visited.Add(neighbor);
+                    queue.Enqueue((neighbor, distance + 1));
+                }
+            }
+        }
+
+        return reachable;
     }
 }
 
