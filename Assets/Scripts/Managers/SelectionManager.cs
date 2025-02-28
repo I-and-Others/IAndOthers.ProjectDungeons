@@ -89,17 +89,14 @@ public class SelectionManager : MonoBehaviour
         }
     }
 
-    private void SelectCharacter(Character character)
+    public void SelectCharacter(Character character)
     {
         // Only allow selection of the active character
         if (!GameManager.Instance.IsCharacterTurn(character))
         {
-            // Debug.Log($"Cannot select {character.data.characterName} - not their turn!");
             return;
         }
 
-        // Debug.Log($"Selecting character: {character.data.characterName}");
-        
         // Deselect previous character
         if (selectedCharacter != null)
         {

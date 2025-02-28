@@ -67,6 +67,9 @@ public class GameManager : MonoBehaviour
             onTurnStart.Invoke();
             uiManager.UpdateCharacterInfo(activeCharacter);
             uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
+
+            // Automatically select the active character
+            SelectionManager.Instance.SelectCharacter(activeCharacter);
         }
     }
 
