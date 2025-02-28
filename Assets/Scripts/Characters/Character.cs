@@ -16,6 +16,9 @@ public class Character : MonoBehaviour
     private int skill1CurrentCooldown;
     private int skill2CurrentCooldown;
 
+    // Add the private field for basic attack cooldown
+    private int basicAttackCurrentCooldown;
+
     public HexCell CurrentTile { get; set; }
     public int MovementPoints
     {
@@ -64,6 +67,8 @@ public class Character : MonoBehaviour
         currentMovementPoints = maxMovementPoints;
         currentActionPoints = 4;
         
+        // Initialize all cooldowns
+        basicAttackCurrentCooldown = 0;
         skill1CurrentCooldown = 0;
         skill2CurrentCooldown = 0;
 
@@ -80,6 +85,7 @@ public class Character : MonoBehaviour
         {
             case 0: // Basic attack
                 Debug.Log($"Using basic attack: {data.attackName}");
+                basicAttackCurrentCooldown = 1;
                 break;
             case 1:
                 Debug.Log($"Using skill 1: {data.skill1Name}");
@@ -167,13 +173,14 @@ public class Character : MonoBehaviour
         MovementPoints = maxMovementPoints;
         
         // Reduce cooldowns
+        if (basicAttackCurrentCooldown > 0) basicAttackCurrentCooldown--;
         if (skill1CurrentCooldown > 0) skill1CurrentCooldown--;
         if (skill2CurrentCooldown > 0) skill2CurrentCooldown--;
     }
 
     public bool CanUseSkill(int skillNumber)
     {
-        if (skillNumber == 0) return currentActionPoints >= 2; // Basic attack cost
+        if (skillNumber == 0) return currentActionPoints >= 2 && basicAttackCurrentCooldown <= 0;
         if (skillNumber == 1) return currentActionPoints >= data.skill1ActionPointCost && skill1CurrentCooldown <= 0;
         if (skillNumber == 2) return currentActionPoints >= data.skill2ActionPointCost && skill2CurrentCooldown <= 0;
         return false;
@@ -183,8 +190,8 @@ public class Character : MonoBehaviour
     {
         switch (skillIndex)
         {
-            case 0: // Basic attack
-                return 0; // Basic attack has no cooldown for now
+            case 0:
+                return basicAttackCurrentCooldown;
             case 1:
                 return skill1CurrentCooldown;
             case 2:
