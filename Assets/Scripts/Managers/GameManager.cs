@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using System.Linq;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -39,13 +40,25 @@ public class GameManager : MonoBehaviour
         characters.Sort((a, b) => b.data.initiative.CompareTo(a.data.initiative));
         turnOrder = new List<Character>(characters);
         
-        // Initialize UI for the first character before starting the game
+        // Ensure we have characters before proceeding
         if (characters.Count > 0)
         {
             activeCharacter = characters[0];
             uiManager.UpdateCharacterInfo(activeCharacter);
+            
+            // Wait a frame to ensure all components are properly initialized
+            StartCoroutine(StartGameDelayed());
         }
-        
+        else
+        {
+            Debug.LogError("No characters available to start the game!");
+        }
+    }
+
+    private IEnumerator StartGameDelayed()
+    {
+        // Wait for next frame to ensure all components are initialized
+        yield return null;
         StartGame();
     }
 

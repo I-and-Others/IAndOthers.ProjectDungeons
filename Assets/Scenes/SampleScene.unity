@@ -4122,6 +4122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1476899676}
   - component: {fileID: 1476899675}
+  - component: {fileID: 1476899678}
   - component: {fileID: 1476899677}
   m_Layer: 0
   m_Name: CameraController
@@ -4269,6 +4270,19 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 330585545}
+--- !u!114 &1476899678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476899674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4cd401518091c249b38ae4ce8c45dfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillBarUI: {fileID: 30480174}
 --- !u!4 &1511816570 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1829837894788841932, guid: bb528b98c224a9e4995bd2a9e8d16092, type: 3}

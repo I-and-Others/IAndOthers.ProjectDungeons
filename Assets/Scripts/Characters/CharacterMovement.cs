@@ -50,6 +50,12 @@ public class CharacterMovement : MonoBehaviour
 
     public List<HexCell> FindReachableCells()
     {
+        if (character == null || character.CurrentTile == null)
+        {
+            Debug.LogWarning("Character or CurrentTile is null in FindReachableCells");
+            return new List<HexCell>();
+        }
+
         var reachable = new List<HexCell>();
         var visited = new HashSet<HexCell>();
         var queue = new Queue<(HexCell cell, int distance)>();
