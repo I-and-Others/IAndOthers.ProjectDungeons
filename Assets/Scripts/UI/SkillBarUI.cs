@@ -12,6 +12,7 @@ public class SkillBarUI : MonoBehaviour
         public Button button;
         public Image skillIcon;
         public Image cooldownOverlay;
+        public Image selectionOverlay;
         public TextMeshProUGUI cooldownText;
     }
 
@@ -52,6 +53,12 @@ public class SkillBarUI : MonoBehaviour
 
     public void UpdateSkillBar(Character character)
     {
+        // First disable all selection overlays
+        foreach (var skillButton in skillButtons)
+        {
+            skillButton.selectionOverlay.enabled = false;
+        }
+        
         currentCharacter = character;
         if (character == null) return;
 
@@ -88,6 +95,12 @@ public class SkillBarUI : MonoBehaviour
 
     private void OnSkillButtonClicked(int skillIndex)
     {
+        // First disable all selection overlays
+        foreach (var skillButton in skillButtons)
+        {
+            skillButton.selectionOverlay.enabled = false;
+        }
+
         if (selectedSkillIndex == skillIndex)
         {
             // Deselect the skill if it's already selected
@@ -97,6 +110,9 @@ public class SkillBarUI : MonoBehaviour
         {
             selectedSkillIndex = skillIndex;
             Debug.Log($"Selected skill {skillIndex}");
+            
+            // Show selection overlay for the selected skill
+            skillButtons[skillIndex].selectionOverlay.enabled = true;
             
             // Update selection manager to show skill range
             SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
@@ -108,6 +124,11 @@ public class SkillBarUI : MonoBehaviour
         if (selectedSkillIndex != -1)
         {
             Debug.Log("Skill selection canceled");
+            // Hide selection overlay when canceling
+            if (selectedSkillIndex >= 0 && selectedSkillIndex < skillButtons.Count)
+            {
+                skillButtons[selectedSkillIndex].selectionOverlay.enabled = false;
+            }
             selectedSkillIndex = -1;
             SelectionManager.Instance.SetSelectionMode(SelectionMode.Move);
         }
@@ -133,6 +154,12 @@ public class SkillBarUI : MonoBehaviour
         // Reset selection
         selectedSkillIndex = -1;
         SelectionManager.Instance.SetSelectionMode(SelectionMode.Move);
+
+        // Reset selection overlays
+        foreach (var skillButton in skillButtons)
+        {
+            skillButton.selectionOverlay.enabled = false;
+        }
     }
 
     private int HexDistance(HexCell a, HexCell b)
@@ -144,6 +171,12 @@ public class SkillBarUI : MonoBehaviour
 
     public void SelectSkill(int skillIndex)
     {
+        // First disable all selection overlays
+        foreach (var skillButton in skillButtons)
+        {
+            skillButton.selectionOverlay.enabled = false;
+        }
+
         if (selectedSkillIndex == skillIndex)
         {
             CancelSkillSelection();
@@ -152,6 +185,8 @@ public class SkillBarUI : MonoBehaviour
         {
             selectedSkillIndex = skillIndex;
             Debug.Log($"Selected skill {skillIndex}");
+            // Show selection overlay for the selected skill
+            skillButtons[skillIndex].selectionOverlay.enabled = true;
             SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
         }
     }
