@@ -186,6 +186,17 @@ public class SelectionManager : MonoBehaviour
 
     public void SetSelectionMode(SelectionMode mode, int range = 0)
     {
+        // If trying to enter TargetSelect mode, first check if the skill is usable
+        if (mode == SelectionMode.TargetSelect)
+        {
+            Character activeCharacter = GameManager.Instance.GetActiveCharacter();
+            if (activeCharacter != null && !activeCharacter.CanUseSkill(skillBarUI.GetSelectedSkillIndex()))
+            {
+                // If skill can't be used (on cooldown), don't change mode
+                return;
+            }
+        }
+
         currentMode = mode;
         currentRange = range;
         // Update highlights based on new mode

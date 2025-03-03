@@ -95,6 +95,12 @@ public class SkillBarUI : MonoBehaviour
 
     private void OnSkillButtonClicked(int skillIndex)
     {
+        // First check if the skill can be used
+        if (currentCharacter == null || !currentCharacter.CanUseSkill(skillIndex))
+        {
+            return; // Do nothing if skill is on cooldown
+        }
+
         // First disable all selection overlays
         foreach (var skillButton in skillButtons)
         {
@@ -171,6 +177,12 @@ public class SkillBarUI : MonoBehaviour
 
     public void SelectSkill(int skillIndex)
     {
+        // First check if the skill can be used
+        if (currentCharacter == null || !currentCharacter.CanUseSkill(skillIndex))
+        {
+            return; // Do nothing if skill is on cooldown
+        }
+
         // First disable all selection overlays
         foreach (var skillButton in skillButtons)
         {
@@ -189,6 +201,11 @@ public class SkillBarUI : MonoBehaviour
             skillButtons[skillIndex].selectionOverlay.enabled = true;
             SelectionManager.Instance.SetSelectionMode(SelectionMode.TargetSelect, SKILL_RANGE);
         }
+    }
+
+    public int GetSelectedSkillIndex()
+    {
+        return selectedSkillIndex;
     }
 
     private void OnDestroy()
