@@ -57,7 +57,13 @@ public class Character : MonoBehaviour
         InitializeCharacter();
     }
 
-    private void InitializeCharacter()
+    public virtual void Initialize(CharacterData characterData)
+    {
+        data = characterData;
+        InitializeCharacter();
+    }
+
+    public void InitializeCharacter()
     {
         // Initialize all stats first
         currentHealth = data.maxHealth;

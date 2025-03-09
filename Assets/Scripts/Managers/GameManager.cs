@@ -81,8 +81,18 @@ public class GameManager : MonoBehaviour
             uiManager.UpdateCharacterInfo(activeCharacter);
             uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
 
-            // Automatically select the active character
-            SelectionManager.Instance.SelectCharacter(activeCharacter);
+            // Check if it's an enemy's turn
+            Enemy enemy = activeCharacter as Enemy;
+            if (enemy != null)
+            {
+                // Execute enemy turn automatically
+                enemy.ExecuteTurn();
+            }
+            else
+            {
+                // Automatically select the active character if it's a player character
+                SelectionManager.Instance.SelectCharacter(activeCharacter);
+            }
         }
     }
 
