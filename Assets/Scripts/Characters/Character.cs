@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using Scripts.Entities.Class;
+using System.Collections.Generic;
 
 public class Character : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class Character : MonoBehaviour
 
     // Add the private field for basic attack cooldown
     private int basicAttackCurrentCooldown;
+
+    public bool IsDead { get; private set; }
 
     public HexCell CurrentTile { get; set; }
     public int MovementPoints
@@ -171,9 +174,99 @@ public class Character : MonoBehaviour
 
     private void Die()
     {
-        // Handle character death
-        gameObject.SetActive(false);
-        // You might want to add more death handling logic here
+        if (IsDead) return; // Prevent multiple deaths
+        
+        IsDead = true;
+
+        // Play death animation if available
+        CharacterAnimator animator = GetComponent<CharacterAnimator>();
+        if (animator != null)
+        {
+            animator.Die();
+        }
+
+        // Disable character components but keep the GameObject
+        var collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            collider.enabled = false;
+        }
+
+        var movement = GetComponent<CharacterMovement>();
+        if (movement != null)
+        {
+            movement.enabled = false;
+        }
+
+        // Remove outline if present
+        var outline = GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = false;
+        }
+
+        // Notify GameManager about death
+        GameManager.Instance.HandleCharacterDeath(this);
+
+        // Set a death visual state (e.g., make the character lie down or fade out)
+        Transform modelTransform = transform.GetChild(0); // Assuming the model is the first child
+        if (modelTransform != null)
+        {
+            // Rotate the model to lie down
+            modelTransform.localRotation = Quaternion.Euler(90, 0, 0);
+            
+            // Optional: Start a coroutine to fade out the model
+            StartCoroutine(FadeOutModel(modelTransform.gameObject));
+        }
+    }
+
+    private System.Collections.IEnumerator FadeOutModel(GameObject model)
+    {
+        // Get all renderers in the model
+        var renderers = model.GetComponentsInChildren<Renderer>();
+        var materials = new List<Material>();
+
+        // Collect all materials and make them transparent
+        foreach (var renderer in renderers)
+        {
+            foreach (var material in renderer.materials)
+            {
+                if (material.HasProperty("_Mode"))
+                {
+                    material.SetFloat("_Mode", 2); // Set to fade mode
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                    material.SetInt("_ZWrite", 0);
+                    material.DisableKeyword("_ALPHATEST_ON");
+                    material.EnableKeyword("_ALPHABLEND_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                    material.renderQueue = 3000;
+                }
+                materials.Add(material);
+            }
+        }
+
+        // Fade out over 2 seconds
+        float duration = 2f;
+        float elapsed = 0f;
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = 1f - (elapsed / duration);
+
+            foreach (var material in materials)
+            {
+                Color color = material.color;
+                color.a = alpha;
+                material.color = color;
+            }
+
+            yield return null;
+        }
+
+        // After fade out, disable the model
+        model.SetActive(false);
     }
 
     public void StartTurn()

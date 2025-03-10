@@ -105,7 +105,7 @@ public class Enemy : Character
     private Character FindClosestHero()
     {
         var heroes = FindObjectsOfType<Character>()
-            .Where(c => !(c is Enemy) && c.gameObject.activeInHierarchy)
+            .Where(c => !(c is Enemy) && c.gameObject.activeInHierarchy && !c.IsDead)
             .ToList();
 
         if (heroes.Count == 0) return null;

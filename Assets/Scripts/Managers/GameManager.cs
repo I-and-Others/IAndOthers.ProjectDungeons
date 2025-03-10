@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     
     public UnityEvent onTurnStart = new UnityEvent();
     public UnityEvent onTurnEnd = new UnityEvent();
+    public UnityEvent<Character> onCharacterDeath = new UnityEvent<Character>();
     
     private List<Character> characters = new List<Character>();
     private List<Character> turnOrder = new List<Character>();
@@ -130,5 +131,51 @@ public class GameManager : MonoBehaviour
     public bool IsCharacterTurn(Character character)
     {
         return character == activeCharacter;
+    }
+
+    public void HandleCharacterDeath(Character character)
+    {
+        // Trigger death event
+        onCharacterDeath.Invoke(character);
+
+        // Remove from lists
+        characters.Remove(character);
+        turnOrder.Remove(character);
+
+        // Adjust current turn index if necessary
+        if (currentTurnIndex >= turnOrder.Count)
+        {
+            currentTurnIndex = 0;
+        }
+
+        // If it was the active character's turn, end their turn
+        if (character == activeCharacter)
+        {
+            EndTurn();
+        }
+
+        // Update UI
+        uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
+
+        // Check win/lose conditions
+        CheckGameEndConditions();
+    }
+
+    private void CheckGameEndConditions()
+    {
+        // Count remaining heroes and enemies
+        int heroCount = characters.Count(c => !(c is Enemy));
+        int enemyCount = characters.Count(c => c is Enemy);
+
+        if (heroCount == 0)
+        {
+            Debug.Log("Game Over - Heroes Defeated!");
+            // Implement game over logic here
+        }
+        else if (enemyCount == 0)
+        {
+            Debug.Log("Victory - All Enemies Defeated!");
+            // Implement victory logic here
+        }
     }
 } 
