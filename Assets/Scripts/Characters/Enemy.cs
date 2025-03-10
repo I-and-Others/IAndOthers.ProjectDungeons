@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using Scripts.Entities.Class;
 
 public class Enemy : Character
 {
     private Character targetCharacter;
     private CharacterMovement movement;
+    private EnemyData enemyData => (EnemyData)data;
 
     private void Awake()
     {
@@ -25,12 +27,79 @@ public class Enemy : Character
         
         if (targetCharacter != null)
         {
-            // Move towards target if not in attack range
-            MoveTowardsTarget();
+            // Calculate distance to target
+            int distanceToTarget = HexDistance(CurrentTile, targetCharacter.CurrentTile);
+            
+            // If target is within attack range, attack
+            if (distanceToTarget <= enemyData.preferredRange)
+            {
+                PerformAttack();
+            }
+            // Otherwise, move towards target if not in attack range
+            else
+            {
+                MoveTowardsTarget();
+            }
         }
         
-        // End turn after movement
+        // End turn after actions
         GameManager.Instance.EndTurn();
+    }
+
+    private void PerformAttack()
+    {
+        // Choose a skill to use based on cooldowns and target
+        int skillToUse = ChooseSkill();
+        
+        if (skillToUse >= 0)
+        {
+            // Create event args with attack information
+            var attackArgs = new OnAIAttackEventArgs
+            {
+                Attacker = this,
+                Target = targetCharacter,
+                SkillIndex = skillToUse,
+                Damage = GetSkillDamage(skillToUse),
+                SkillType = GetSkillType(skillToUse)
+            };
+
+            // Trigger the AI attack event
+            EventManager.Instance.Trigger(GameEvents.ON_AI_ATTACK, this, attackArgs);
+            
+            // Apply the skill effect
+            UseSkill(skillToUse, targetCharacter);
+        }
+    }
+
+    private int ChooseSkill()
+    {
+        // Try to use skills in priority order (skill2 > skill1 > basic attack)
+        if (CanUseSkill(2)) return 2;
+        if (CanUseSkill(1)) return 1;
+        if (CanUseSkill(0)) return 0;
+        return -1;
+    }
+
+    private int GetSkillDamage(int skillIndex)
+    {
+        switch (skillIndex)
+        {
+            case 0: return data.attackDamage;
+            case 1: return data.skill1Damage;
+            case 2: return data.skill2Damage;
+            default: return 0;
+        }
+    }
+
+    private SkillType GetSkillType(int skillIndex)
+    {
+        switch (skillIndex)
+        {
+            case 0: return data.attackType;
+            case 1: return data.skill1Type;
+            case 2: return data.skill2Type;
+            default: return SkillType.PhysicalAttack;
+        }
     }
 
     private Character FindClosestHero()
@@ -41,7 +110,7 @@ public class Enemy : Character
 
         if (heroes.Count == 0) return null;
 
-        return heroes.OrderBy(h => Vector3.Distance(transform.position, h.transform.position))
+        return heroes.OrderBy(h => HexDistance(CurrentTile, h.CurrentTile))
             .FirstOrDefault();
     }
 
@@ -61,17 +130,15 @@ public class Enemy : Character
         var reachableCells = movement.FindReachableCells();
         if (reachableCells.Count == 0) return;
 
-        // Filter out the current cell and find the closest to target
+        // Find the cell that gets us closest to the preferred range
         HexCell bestCell = reachableCells
-            .Where(cell => cell != currentCell) // Exclude current cell
-            .OrderBy(cell => HexDistance(cell, targetCell)) // Use hex distance instead of Vector3 distance
+            .OrderBy(cell => Mathf.Abs(HexDistance(cell, targetCell) - enemyData.preferredRange))
             .FirstOrDefault();
 
         // If we found a valid cell to move to
         if (bestCell != null)
         {
             movement.MoveTo(bestCell);
-            Debug.Log($"Enemy moving to: ({bestCell.q}, {bestCell.r})");
         }
     }
 

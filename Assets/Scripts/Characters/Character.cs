@@ -1,4 +1,6 @@
 using UnityEngine;
+using System;
+using Scripts.Entities.Class;
 
 public class Character : MonoBehaviour
 {
@@ -92,30 +94,25 @@ public class Character : MonoBehaviour
             case 0: // Basic attack
                 Debug.Log($"Using basic attack: {data.attackName}");
                 basicAttackCurrentCooldown = 1;
+                ApplyDamage(target, data.attackDamage, data.attackType);
                 break;
             case 1:
                 Debug.Log($"Using skill 1: {data.skill1Name}");
                 skill1CurrentCooldown = data.skill1Cooldown;
+                ApplyDamage(target, data.skill1Damage, data.skill1Type);
                 break;
             case 2:
                 Debug.Log($"Using skill 2: {data.skill2Name}");
                 skill2CurrentCooldown = data.skill2Cooldown;
+                ApplyDamage(target, data.skill2Damage, data.skill2Type);
                 break;
         }
     }
 
-    private void ApplySkill1(Character target)
-    {
-        ApplyDamage(target, data.skill1Damage, data.skill1Type);
-    }
-
-    private void ApplySkill2(Character target)
-    {
-        ApplyDamage(target, data.skill2Damage, data.skill2Type);
-    }
-
     private void ApplyDamage(Character target, int amount, SkillType type)
     {
+        if (target == null) return;
+
         switch (type)
         {
             case SkillType.PhysicalAttack:
@@ -124,7 +121,7 @@ public class Character : MonoBehaviour
                     target.CurrentPhysicalArmor -= amount;
                     if (target.CurrentPhysicalArmor < 0)
                     {
-                        target.CurrentHealth += target.CurrentPhysicalArmor;
+                        target.CurrentHealth += target.CurrentPhysicalArmor; // Apply overflow damage to health
                         target.CurrentPhysicalArmor = 0;
                     }
                 }
@@ -140,7 +137,7 @@ public class Character : MonoBehaviour
                     target.CurrentMagicArmor -= amount;
                     if (target.CurrentMagicArmor < 0)
                     {
-                        target.CurrentHealth += target.CurrentMagicArmor;
+                        target.CurrentHealth += target.CurrentMagicArmor; // Apply overflow damage to health
                         target.CurrentMagicArmor = 0;
                     }
                 }
@@ -151,20 +148,25 @@ public class Character : MonoBehaviour
                 break;
 
             case SkillType.Heal:
-                target.CurrentHealth = Mathf.Min(target.CurrentHealth + amount, target.data.maxHealth);
+                target.CurrentHealth = Mathf.Min(target.CurrentHealth + amount, data.maxHealth);
                 break;
 
             case SkillType.Debuff:
-                // For debuff, we'll reduce physical armor
                 target.CurrentPhysicalArmor = Mathf.Max(0, target.CurrentPhysicalArmor - amount);
                 break;
         }
+
+        // Log the damage application for debugging
+        Debug.Log($"{name} used {type} on {target.name} for {amount} damage/effect");
 
         // Check for death
         if (target.CurrentHealth <= 0)
         {
             target.Die();
         }
+
+        // Trigger stat change event to update UI
+        EventManager.Instance.Trigger(GameEvents.ON_CHARACTER_STAT_INFO_CHANGED, this, EventArgs.Empty);
     }
 
     private void Die()

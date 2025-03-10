@@ -21,5 +21,7 @@ namespace Scripts.Entities.Class
         public static string ON_CHARACTER_ATTACK_SPELL { get; private set; } = "OnCharacterAttackSpell";
         public static string ON_CHARACTER_JUMP { get; private set; } = "OnCharacterJump";
         public static string ON_CHARACTER_GROUNDED { get; private set; } = "OnCharacterGrounded";
+        
+        public static string ON_AI_ATTACK { get; private set; } = "OnAIAttack";
     }
 }
