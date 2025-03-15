@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using System.Linq;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,13 +12,16 @@ public class GameManager : MonoBehaviour
     public UnityEvent onTurnStart = new UnityEvent();
     public UnityEvent onTurnEnd = new UnityEvent();
     public UnityEvent<Character> onCharacterDeath = new UnityEvent<Character>();
+    public UnityEvent<string, float> onGameOver = new UnityEvent<string, float>(); // Message and countdown duration
     
     private List<Character> characters = new List<Character>();
     private List<Character> turnOrder = new List<Character>();
     private int currentTurnIndex = 0;
     private Character activeCharacter;
+    private bool isGameOver = false;
     
     [SerializeField] public UIManager uiManager;
+    [SerializeField] private float gameOverCountdown = 5f;
 
     public bool canEndTurn => characters.All(c => c.MovementPoints == 0);
 
@@ -163,19 +167,47 @@ public class GameManager : MonoBehaviour
 
     private void CheckGameEndConditions()
     {
+        if (isGameOver) return;
+
         // Count remaining heroes and enemies
         int heroCount = characters.Count(c => !(c is Enemy));
         int enemyCount = characters.Count(c => c is Enemy);
 
         if (heroCount == 0)
         {
-            Debug.Log("Game Over - Heroes Defeated!");
-            // Implement game over logic here
+            StartGameOver("Game Over - Heroes Defeated!");
         }
         else if (enemyCount == 0)
         {
-            Debug.Log("Victory - All Enemies Defeated!");
-            // Implement victory logic here
+            StartGameOver("Victory - All Enemies Defeated!");
         }
+    }
+
+    private void StartGameOver(string message)
+    {
+        isGameOver = true;
+        
+        // Disable all character controls
+        foreach (var character in FindObjectsOfType<Character>())
+        {
+            var movement = character.GetComponent<CharacterMovement>();
+            if (movement != null)
+                movement.enabled = false;
+        }
+
+        // Trigger game over event with message and countdown duration
+        onGameOver.Invoke(message, gameOverCountdown);
+        
+        // Start countdown to restart
+        StartCoroutine(GameOverCountdown());
+    }
+
+    private IEnumerator GameOverCountdown()
+    {
+        yield return new WaitForSeconds(gameOverCountdown);
+        
+        // Reload the current scene
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.name);
     }
 } 
