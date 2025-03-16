@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using System.Linq;
 
 public class SkillBarUI : MonoBehaviour
 {
@@ -153,8 +154,26 @@ public class SkillBarUI : MonoBehaviour
             return;
         }
 
+        // Find target character in the cell
+        Character targetCharacter = FindCharacterInCell(targetCell);
+        if (targetCharacter == null)
+        {
+            Debug.Log("No target found in selected cell");
+            return;
+        }
+
+        // Don't allow targeting self with damaging skills
+        if (targetCharacter == currentCharacter && 
+            (currentCharacter.data.attackType != SkillType.Heal && 
+             currentCharacter.data.skill1Type != SkillType.Heal && 
+             currentCharacter.data.skill2Type != SkillType.Heal))
+        {
+            Debug.Log("Cannot target self with damaging skills");
+            return;
+        }
+
         // Update cooldown and UI
-        currentCharacter.UseSkill(selectedSkillIndex, null); // We'll add target later
+        currentCharacter.UseSkill(selectedSkillIndex, targetCharacter);
         UpdateCooldowns();
         
         // Reset selection
@@ -166,6 +185,15 @@ public class SkillBarUI : MonoBehaviour
         {
             skillButton.selectionOverlay.enabled = false;
         }
+    }
+
+    private Character FindCharacterInCell(HexCell cell)
+    {
+        // Find all characters in the scene
+        Character[] characters = FindObjectsOfType<Character>();
+        
+        // Return the first character that occupies the target cell
+        return characters.FirstOrDefault(c => c.CurrentTile == cell && c.gameObject.activeInHierarchy);
     }
 
     private int HexDistance(HexCell a, HexCell b)

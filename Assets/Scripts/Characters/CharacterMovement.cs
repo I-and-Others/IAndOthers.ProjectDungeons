@@ -24,6 +24,7 @@ public class CharacterMovement : MonoBehaviour
     private void Start()
     {
         character = GetComponent<Character>();
+        character.InitializeCharacter();
         characterAnimator = GetComponent<CharacterAnimator>();
         if (characterAnimator == null)
         {

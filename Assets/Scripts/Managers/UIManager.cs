@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,11 +10,62 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI characterInfoText;
     [SerializeField] private TextMeshProUGUI turnOrderText;
     [SerializeField] private CharacterStatusUI characterStatusUI;
+    
+    [Header("Game Over UI")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private TextMeshProUGUI countdownText;
 
     private void Start()
     {
         endTurnButton.onClick.AddListener(OnEndTurnClicked);
         UpdateEndTurnButton();
+
+        // Hide game over panel initially
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
+
+        // Subscribe to game over event
+        GameManager.Instance.onGameOver.AddListener(ShowGameOver);
+    }
+
+    private void OnDestroy()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.onGameOver.RemoveListener(ShowGameOver);
+        }
+    }
+
+    private void ShowGameOver(string message, float countdown)
+    {
+        // Show game over panel
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(true);
+
+        // Set game over message
+        if (gameOverText != null)
+            gameOverText.text = message;
+
+        // Start countdown
+        StartCoroutine(UpdateCountdown(countdown));
+    }
+
+    private IEnumerator UpdateCountdown(float duration)
+    {
+        float timeLeft = duration;
+
+        while (timeLeft > 0)
+        {
+            if (countdownText != null)
+                countdownText.text = $"Restarting in {timeLeft:F1} seconds...";
+
+            timeLeft -= Time.deltaTime;
+            yield return null;
+        }
+
+        if (countdownText != null)
+            countdownText.text = "Restarting...";
     }
 
     private void OnEndTurnClicked()

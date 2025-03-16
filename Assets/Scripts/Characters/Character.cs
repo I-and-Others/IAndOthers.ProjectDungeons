@@ -1,4 +1,7 @@
 using UnityEngine;
+using System;
+using Scripts.Entities.Class;
+using System.Collections.Generic;
 
 public class Character : MonoBehaviour
 {
@@ -18,6 +21,8 @@ public class Character : MonoBehaviour
 
     // Add the private field for basic attack cooldown
     private int basicAttackCurrentCooldown;
+
+    public bool IsDead { get; private set; }
 
     public HexCell CurrentTile { get; set; }
     public int MovementPoints
@@ -57,7 +62,13 @@ public class Character : MonoBehaviour
         InitializeCharacter();
     }
 
-    private void InitializeCharacter()
+    public virtual void Initialize(CharacterData characterData)
+    {
+        data = characterData;
+        InitializeCharacter();
+    }
+
+    public void InitializeCharacter()
     {
         // Initialize all stats first
         currentHealth = data.maxHealth;
@@ -86,30 +97,25 @@ public class Character : MonoBehaviour
             case 0: // Basic attack
                 Debug.Log($"Using basic attack: {data.attackName}");
                 basicAttackCurrentCooldown = 1;
+                ApplyDamage(target, data.attackDamage, data.attackType);
                 break;
             case 1:
                 Debug.Log($"Using skill 1: {data.skill1Name}");
                 skill1CurrentCooldown = data.skill1Cooldown;
+                ApplyDamage(target, data.skill1Damage, data.skill1Type);
                 break;
             case 2:
                 Debug.Log($"Using skill 2: {data.skill2Name}");
                 skill2CurrentCooldown = data.skill2Cooldown;
+                ApplyDamage(target, data.skill2Damage, data.skill2Type);
                 break;
         }
     }
 
-    private void ApplySkill1(Character target)
-    {
-        ApplyDamage(target, data.skill1Damage, data.skill1Type);
-    }
-
-    private void ApplySkill2(Character target)
-    {
-        ApplyDamage(target, data.skill2Damage, data.skill2Type);
-    }
-
     private void ApplyDamage(Character target, int amount, SkillType type)
     {
+        if (target == null) return;
+
         switch (type)
         {
             case SkillType.PhysicalAttack:
@@ -118,7 +124,7 @@ public class Character : MonoBehaviour
                     target.CurrentPhysicalArmor -= amount;
                     if (target.CurrentPhysicalArmor < 0)
                     {
-                        target.CurrentHealth += target.CurrentPhysicalArmor;
+                        target.CurrentHealth += target.CurrentPhysicalArmor; // Apply overflow damage to health
                         target.CurrentPhysicalArmor = 0;
                     }
                 }
@@ -134,7 +140,7 @@ public class Character : MonoBehaviour
                     target.CurrentMagicArmor -= amount;
                     if (target.CurrentMagicArmor < 0)
                     {
-                        target.CurrentHealth += target.CurrentMagicArmor;
+                        target.CurrentHealth += target.CurrentMagicArmor; // Apply overflow damage to health
                         target.CurrentMagicArmor = 0;
                     }
                 }
@@ -145,27 +151,122 @@ public class Character : MonoBehaviour
                 break;
 
             case SkillType.Heal:
-                target.CurrentHealth = Mathf.Min(target.CurrentHealth + amount, target.data.maxHealth);
+                target.CurrentHealth = Mathf.Min(target.CurrentHealth + amount, data.maxHealth);
                 break;
 
             case SkillType.Debuff:
-                // For debuff, we'll reduce physical armor
                 target.CurrentPhysicalArmor = Mathf.Max(0, target.CurrentPhysicalArmor - amount);
                 break;
         }
+
+        // Log the damage application for debugging
+        Debug.Log($"{name} used {type} on {target.name} for {amount} damage/effect");
 
         // Check for death
         if (target.CurrentHealth <= 0)
         {
             target.Die();
         }
+
+        // Trigger stat change event to update UI
+        EventManager.Instance.Trigger(GameEvents.ON_CHARACTER_STAT_INFO_CHANGED, this, EventArgs.Empty);
     }
 
     private void Die()
     {
-        // Handle character death
-        gameObject.SetActive(false);
-        // You might want to add more death handling logic here
+        if (IsDead) return; // Prevent multiple deaths
+        
+        IsDead = true;
+
+        // Play death animation if available
+        CharacterAnimator animator = GetComponent<CharacterAnimator>();
+        if (animator != null)
+        {
+            animator.Die();
+        }
+
+        // Disable character components but keep the GameObject
+        var collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            collider.enabled = false;
+        }
+
+        var movement = GetComponent<CharacterMovement>();
+        if (movement != null)
+        {
+            movement.enabled = false;
+        }
+
+        // Remove outline if present
+        var outline = GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = false;
+        }
+
+        // Notify GameManager about death
+        GameManager.Instance.HandleCharacterDeath(this);
+
+        // Set a death visual state (e.g., make the character lie down or fade out)
+        Transform modelTransform = transform.GetChild(0); // Assuming the model is the first child
+        if (modelTransform != null)
+        {
+            // Rotate the model to lie down
+            modelTransform.localRotation = Quaternion.Euler(90, 0, 0);
+            
+            // Optional: Start a coroutine to fade out the model
+            StartCoroutine(FadeOutModel(modelTransform.gameObject));
+        }
+    }
+
+    private System.Collections.IEnumerator FadeOutModel(GameObject model)
+    {
+        // Get all renderers in the model
+        var renderers = model.GetComponentsInChildren<Renderer>();
+        var materials = new List<Material>();
+
+        // Collect all materials and make them transparent
+        foreach (var renderer in renderers)
+        {
+            foreach (var material in renderer.materials)
+            {
+                if (material.HasProperty("_Mode"))
+                {
+                    material.SetFloat("_Mode", 2); // Set to fade mode
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                    material.SetInt("_ZWrite", 0);
+                    material.DisableKeyword("_ALPHATEST_ON");
+                    material.EnableKeyword("_ALPHABLEND_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                    material.renderQueue = 3000;
+                }
+                materials.Add(material);
+            }
+        }
+
+        // Fade out over 2 seconds
+        float duration = 2f;
+        float elapsed = 0f;
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = 1f - (elapsed / duration);
+
+            foreach (var material in materials)
+            {
+                Color color = material.color;
+                color.a = alpha;
+                material.color = color;
+            }
+
+            yield return null;
+        }
+
+        // After fade out, disable the model
+        model.SetActive(false);
     }
 
     public void StartTurn()

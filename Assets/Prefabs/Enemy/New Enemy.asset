@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52117a8b78d168c44867e38605ad4227, type: 3}
+  m_Name: New Enemy
+  m_EditorClassIdentifier: 
+  characterName: Enemy Warrior
+  characterType: 0
+  characterIcon: {fileID: 21300000, guid: 108ca3e7dda90d945b0914bf9259ec94, type: 3}
+  characterPrefab: {fileID: 3016724281112475911, guid: 8188651915fcd5147865cf8973cd2eff, type: 3}
+  maxHealth: 110
+  maxPhysicalArmor: 50
+  maxMagicArmor: 25
+  movementPoints: 4
+  initiative: 5
+  attackName: Attack
+  attackDamage: 10
+  attackType: 0
+  attackIcon: {fileID: 21300000, guid: 33cd3b491748050418115b4d3a0b6534, type: 3}
+  skill1Name: Some Attack
+  skill1Damage: 20
+  skill1Type: 0
+  skill1Icon: {fileID: 21300000, guid: f9619563aba8b7542abf0aabdc638afe, type: 3}
+  skill1ActionPointCost: 2
+  skill1Cooldown: 2
+  skill2Name: Dangerous Attack
+  skill2Damage: 30
+  skill2Type: 0
+  skill2Icon: {fileID: 21300000, guid: f507f03eb80bcbf49bb458bd6a54bd9a, type: 3}
+  skill2ActionPointCost: 2
+  skill2Cooldown: 3
+  detectionRange: 5
+  preferredRange: 1
+  isAggressive: 1
