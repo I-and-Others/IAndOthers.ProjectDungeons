@@ -16,8 +16,8 @@ MonoBehaviour:
   characterType: 0
   characterIcon: {fileID: 21300000, guid: 9895f5f95566ceb47bb239149d90cb44, type: 3}
   characterPrefab: {fileID: 2283711221953611619, guid: bb528b98c224a9e4995bd2a9e8d16092, type: 3}
-  maxHealth: 120
-  maxPhysicalArmor: 80
+  maxHealth: 12
+  maxPhysicalArmor: 8
   maxMagicArmor: 40
   movementPoints: 3
   initiative: 5
