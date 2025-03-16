@@ -77,53 +77,79 @@ public class GameManager : MonoBehaviour
 
     public void StartTurn()
     {
-        if (currentTurnIndex < turnOrder.Count)
-        {
-            activeCharacter = turnOrder[currentTurnIndex];
-            activeCharacter.StartTurn();
-            
-            onTurnStart.Invoke();
-            uiManager.UpdateCharacterInfo(activeCharacter);
-            uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
+        if (isGameOver) return;
 
-            // Check if it's an enemy's turn
-            Enemy enemy = activeCharacter as Enemy;
-            if (enemy != null)
-            {
-                // Execute enemy turn automatically
-                enemy.ExecuteTurn();
-            }
-            else
-            {
-                // Automatically select the active character if it's a player character
-                SelectionManager.Instance.SelectCharacter(activeCharacter);
-            }
+        // Skip turns of dead characters
+        while (currentTurnIndex < turnOrder.Count && turnOrder[currentTurnIndex].IsDead)
+        {
+            currentTurnIndex++;
+        }
+
+        // If we've reached the end of the turn order, start a new round
+        if (currentTurnIndex >= turnOrder.Count)
+        {
+            currentTurnIndex = 0;
+            StartNewRound();
+            return;
+        }
+
+        activeCharacter = turnOrder[currentTurnIndex];
+        activeCharacter.StartTurn();
+            
+        onTurnStart.Invoke();
+        uiManager.UpdateCharacterInfo(activeCharacter);
+        uiManager.UpdateTurnOrder(turnOrder, currentTurnIndex);
+
+        // Check if it's an enemy's turn
+        Enemy enemy = activeCharacter as Enemy;
+        if (enemy != null && !enemy.IsDead)
+        {
+            // Execute enemy turn automatically
+            enemy.ExecuteTurn();
+        }
+        else if (!activeCharacter.IsDead)
+        {
+            // Automatically select the active character if it's a player character
+            SelectionManager.Instance.SelectCharacter(activeCharacter);
+        }
+        else
+        {
+            // If the character is dead, skip their turn
+            EndTurn();
         }
     }
 
     public void EndTurn()
     {
+        if (isGameOver) return;
+
         onTurnEnd.Invoke();
         
         currentTurnIndex++;
-        if (currentTurnIndex >= turnOrder.Count)
-        {
-            currentTurnIndex = 0;
-            StartNewRound();
-        }
-        else
-        {
-            StartTurn();
-        }
+        StartTurn();
     }
 
     private void StartNewRound()
     {
-        foreach (var character in characters)
+        if (isGameOver) return;
+
+        // Remove dead characters from turn order
+        turnOrder.RemoveAll(character => character.IsDead);
+        
+        // Check if game should end
+        CheckGameEndConditions();
+        
+        if (!isGameOver)
         {
-            // Reset any round-based stats here if needed
+            foreach (var character in turnOrder)
+            {
+                if (!character.IsDead)
+                {
+                    // Reset any round-based stats here if needed
+                }
+            }
+            StartTurn();
         }
-        StartTurn();
     }
 
     public Character GetActiveCharacter()
