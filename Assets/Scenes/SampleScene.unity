@@ -4186,6 +4186,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldGenerator: {fileID: 1787963007}
   heroesToSpawn:
+  - {fileID: 11400000, guid: 0e7cc4172ef192d4b80da613a63c6707, type: 2}
+  - {fileID: 11400000, guid: d593145f4499ab84fa0c782a45ad6627, type: 2}
   - {fileID: 11400000, guid: edc82f0d34ace594f88823cdd0781a3a, type: 2}
   enemiesToSpawn:
   - {fileID: 11400000, guid: 96cc68a5a8901664480e2032cff138f5, type: 2}
